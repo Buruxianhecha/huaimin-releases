@@ -1,0 +1,11 @@
+{
+  "version": "0.38.72",
+  "versionCode": 62138,
+  "apkUrl": "https://lin-labs.pages.dev/download/android",
+  "sha256": "0e23ebd07e17288fd392d5de1cfdb6b15916f82efb411899eb61796730ca8f4f",
+  "bytes": 26296928,
+  "releaseNotes": [
+    "优化了一些功能。"
+  ],
+  "mandatory": false
+}
