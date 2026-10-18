@@ -1,9 +1,9 @@
 {
-  "version": "0.38.96",
-  "versionCode": 62162,
+  "version": "0.38.97",
+  "versionCode": 62163,
   "apkUrl": "https:\/\/lin-labs.pages.dev\/download\/android",
-  "sha256": "3f84a2569a3dbc7b666b9f1bffd20cedb79fafc64290074cb07619ad4ff2b565",
-  "bytes": 26387183,
+  "sha256": "d33966263178c6530cf2d6faeeafe21a477415906a8a2f75ac02f52dc9461189",
+  "bytes": 26403567,
   "releaseNotes": [
     "优化了一些功能。"
   ],
