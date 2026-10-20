@@ -1,0 +1,13 @@
+name: WenXin APK runner check
+on:
+  push:
+    branches:
+      - build/wenxinwukui-v0.1.11
+    paths:
+      - .github/workflows/wenxin-build.yml
+  workflow_dispatch:
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - run: echo 'Build runner available'
