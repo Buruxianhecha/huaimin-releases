@@ -53,11 +53,11 @@ jobs:
       - name: Compile and assemble APK
         run: |
           set -euo pipefail
-          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)"
-          P="$(ls -d "$ANDROID_HOME"/platforms/android-* | sort -V | tail -n 1)"
+          BT="$ANDROID_HOME/build-tools/35.0.1"
+          P="$ANDROID_HOME/platforms/android-35"
           echo "Using $BT and $P"
           mkdir -p out/classes out/dex out/stage/assets
-          javac -encoding UTF-8 -source 8 -target 8 -bootclasspath "$P/android.jar" -d out/classes app/src/main/java/com/lin/wenxinwukui/MainActivity.java
+          javac -encoding UTF-8 --release 8 -classpath "$P/android.jar" -d out/classes app/src/main/java/com/lin/wenxinwukui/MainActivity.java
           "$BT/aapt2" compile app/src/main/res/mipmap-hdpi/ic_launcher.png -o out/
           "$BT/aapt2" link -o out/unsigned.apk -I "$P/android.jar" --manifest AndroidManifest.xml --min-sdk-version 29 --target-sdk-version 35 --version-code 11 --version-name 0.1.11 out/mipmap-hdpi_ic_launcher.png.flat
           "$BT/d8" --min-api 29 --lib "$P/android.jar" --output out/dex out/classes/com/lin/wenxinwukui/*.class
@@ -68,7 +68,7 @@ jobs:
       - name: Sign and verify installable APK
         run: |
           set -euo pipefail
-          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)"
+          BT="$ANDROID_HOME/build-tools/35.0.1"
           PASS="$(openssl rand -hex 16)"
           keytool -genkeypair -alias wenxin -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=Lin Labs,O=Lin Labs,C=CN" -storetype PKCS12 -keystore out/wenxin-keystore.p12 -storepass "$PASS" -keypass "$PASS" -noprompt
           "$BT/apksigner" sign --ks out/wenxin-keystore.p12 --ks-type PKCS12 --ks-key-alias wenxin --ks-pass "pass:$PASS" --key-pass "pass:$PASS" --out out/WenXinWuKui-v0.1.11.apk out/aligned.apk
