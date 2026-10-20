@@ -4,7 +4,7 @@ on:
     branches:
       - build/wenxinwukui-v0.1.11
     paths:
-      - .github/workflows/wenxin-build.yml
+      - android-wenxin/manual-build-trigger.txt
   workflow_dispatch:
 permissions:
   contents: read
@@ -74,19 +74,10 @@ jobs:
           "$BT/apksigner" sign --ks out/wenxin-keystore.p12 --ks-type PKCS12 --ks-key-alias wenxin --ks-pass "pass:$PASS" --key-pass "pass:$PASS" --out out/WenXinWuKui-v0.1.11.apk out/aligned.apk
           "$BT/apksigner" verify --verbose --print-certs out/WenXinWuKui-v0.1.11.apk
           "$BT/aapt" dump badging out/WenXinWuKui-v0.1.11.apk | head -n 16
-          echo "$PASS" > out/keystore-password.txt
-          chmod 600 out/keystore-password.txt out/wenxin-keystore.p12
+          rm -f out/wenxin-keystore.p12
       - name: Upload APK
         uses: actions/upload-artifact@v4
         with:
           name: WenXinWuKui-v0.1.11-APK
           path: android-wenxin/out/WenXinWuKui-v0.1.11.apk
-          retention-days: 90
-      - name: Preserve signing key securely
-        uses: actions/upload-artifact@v4
-        with:
-          name: WenXinWuKui-signing-material-PRIVATE
-          path: |
-            android-wenxin/out/wenxin-keystore.p12
-            android-wenxin/out/keystore-password.txt
           retention-days: 90
