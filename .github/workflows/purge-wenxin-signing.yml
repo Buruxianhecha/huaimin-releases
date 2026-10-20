@@ -1,0 +1,19 @@
+name: Delete temporary signing artifact
+on:
+  push:
+    branches:
+      - build/wenxinwukui-v0.1.11
+    paths:
+      - .github/workflows/purge-wenxin-signing.yml
+permissions:
+  contents: read
+  actions: write
+jobs:
+  purge:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Remove publicly visible temporary signing material
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh api --method DELETE "repos/${{ github.repository }}/actions/artifacts/12239795011"
