@@ -1,4 +1,4 @@
-name: WenXin APK runner check
+name: Build WenXinWuKui v0.1.11 APK
 on:
   push:
     branches:
@@ -6,8 +6,87 @@ on:
     paths:
       - .github/workflows/wenxin-build.yml
   workflow_dispatch:
+permissions:
+  contents: read
 jobs:
   build:
     runs-on: ubuntu-latest
+    timeout-minutes: 15
+    defaults:
+      run:
+        working-directory: android-wenxin
     steps:
-      - run: echo 'Build runner available'
+      - uses: actions/checkout@v4
+      - name: Check Android build tools
+        run: |
+          echo "ANDROID_HOME=$ANDROID_HOME"
+          ls "$ANDROID_HOME/build-tools" && ls "$ANDROID_HOME/platforms"
+      - name: Create app icon
+        run: |
+          mkdir -p app/src/main/res/mipmap-hdpi
+          python3 - <<'PY'
+          import math,struct,zlib
+          n=144
+          pixels=[]
+          for y in range(n):
+              row=bytearray()
+              for x in range(n):
+                  dx=(x-n/2)/(n/2);dy=(y-n/2)/(n/2)
+                  c=(23,25,35)
+                  if dx*dx+dy*dy < .72:
+                      r=math.sqrt(dx*dx+dy*dy)
+                      c=(int(28+22*r),int(30+18*r),int(41+15*r))
+                  # golden coin, rising line
+                  cx,cy=72,73
+                  coin=(x-cx)**2+(y-cy)**2
+                  if 26**2<coin<33**2:c=(203,160,85)
+                  if 24**2<coin<26**2:c=(246,209,143)
+                  if 54<x<89 and 58<y<86 and (abs(y-(80-0.54*(x-54)))<2.4):c=(246,211,145)
+                  if abs(x-93)<2 and 52<y<76:c=(246,211,145)
+                  row.extend((*c,255))
+              pixels.append(b'\x00'+row)
+          def chunk(kind,b):return struct.pack('>I',len(b))+kind+b+struct.pack('>I',zlib.crc32(kind+b)&0xffffffff)
+          raw=b''.join(pixels)
+          out=b'\x89PNG\r\n\x1a\n'+chunk(b'IHDR',struct.pack('>IIBBBBB',n,n,8,6,0,0,0))+chunk(b'IDAT',zlib.compress(raw,9))+chunk(b'IEND',b'')
+          open('app/src/main/res/mipmap-hdpi/ic_launcher.png','wb').write(out)
+          PY
+      - name: Compile and assemble APK
+        run: |
+          set -euo pipefail
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)"
+          P="$(ls -d "$ANDROID_HOME"/platforms/android-* | sort -V | tail -n 1)"
+          echo "Using $BT and $P"
+          mkdir -p out/classes out/dex out/stage/assets
+          javac -encoding UTF-8 -source 8 -target 8 -bootclasspath "$P/android.jar" -d out/classes app/src/main/java/com/lin/wenxinwukui/MainActivity.java
+          "$BT/aapt2" compile app/src/main/res/mipmap-hdpi/ic_launcher.png -o out/
+          "$BT/aapt2" link -o out/unsigned.apk -I "$P/android.jar" --manifest AndroidManifest.xml --min-sdk-version 29 --target-sdk-version 35 --version-code 11 --version-name 0.1.11 out/mipmap-hdpi_ic_launcher.png.flat
+          "$BT/d8" --min-api 29 --lib "$P/android.jar" --output out/dex out/classes/com/lin/wenxinwukui/*.class
+          cp out/dex/classes.dex out/stage/classes.dex
+          cp app/src/main/assets/index.html out/stage/assets/index.html
+          (cd out/stage && zip -q -r ../unsigned.apk classes.dex assets/)
+          "$BT/zipalign" -f -p 4 out/unsigned.apk out/aligned.apk
+      - name: Sign and verify installable APK
+        run: |
+          set -euo pipefail
+          BT="$(ls -d "$ANDROID_HOME"/build-tools/* | sort -V | tail -n 1)"
+          PASS="$(openssl rand -hex 16)"
+          keytool -genkeypair -alias wenxin -keyalg RSA -keysize 3072 -validity 10000 -dname "CN=Lin Labs,O=Lin Labs,C=CN" -storetype PKCS12 -keystore out/wenxin-keystore.p12 -storepass "$PASS" -keypass "$PASS" -noprompt
+          "$BT/apksigner" sign --ks out/wenxin-keystore.p12 --ks-type PKCS12 --ks-key-alias wenxin --ks-pass "pass:$PASS" --key-pass "pass:$PASS" --out out/WenXinWuKui-v0.1.11.apk out/aligned.apk
+          "$BT/apksigner" verify --verbose --print-certs out/WenXinWuKui-v0.1.11.apk
+          "$BT/aapt" dump badging out/WenXinWuKui-v0.1.11.apk | head -n 16
+          echo "$PASS" > out/keystore-password.txt
+          chmod 600 out/keystore-password.txt out/wenxin-keystore.p12
+      - name: Upload APK
+        uses: actions/upload-artifact@v4
+        with:
+          name: WenXinWuKui-v0.1.11-APK
+          path: android-wenxin/out/WenXinWuKui-v0.1.11.apk
+          retention-days: 90
+      - name: Preserve signing key securely
+        uses: actions/upload-artifact@v4
+        with:
+          name: WenXinWuKui-signing-material-PRIVATE
+          path: |
+            android-wenxin/out/wenxin-keystore.p12
+            android-wenxin/out/keystore-password.txt
+          retention-days: 90
