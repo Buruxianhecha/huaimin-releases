@@ -1,4 +1,4 @@
-package com.lin.wenxinwukui;
+package com.lin.zhiyu;
 
 import android.app.Activity;
 import android.os.Bundle;
@@ -36,8 +36,8 @@ public class MainActivity extends Activity {
     WebView web;
     ValueCallback<Uri[]> chooser;
     Handler ui = new Handler(Looper.getMainLooper());
-    static final String PREF = "wenxin_private";
-    static final String KEY_ALIAS = "wenxin_ledger_api_keys";
+    static final String PREF = "zhiyu_private";
+    static final String KEY_ALIAS = "zhiyu_ledger_api_keys";
     @Override public void onCreate(Bundle state) {
         super.onCreate(state);
         getWindow().setStatusBarColor(Color.rgb(24,23,24));
@@ -94,7 +94,7 @@ public class MainActivity extends Activity {
         ContentValues v=new ContentValues();
         v.put(MediaStore.MediaColumns.DISPLAY_NAME,safeName(file));
         v.put(MediaStore.MediaColumns.MIME_TYPE,mime);
-        v.put(MediaStore.MediaColumns.RELATIVE_PATH,"Download/WenXinWuKui");
+        v.put(MediaStore.MediaColumns.RELATIVE_PATH,"Download/ZhiYu");
         v.put(MediaStore.MediaColumns.IS_PENDING,1);
         Uri uri=getContentResolver().insert(MediaStore.Downloads.EXTERNAL_CONTENT_URI,v);
         if(uri==null)throw new IOException("无法创建导出文件");
@@ -132,7 +132,7 @@ public class MainActivity extends Activity {
     public class Bridge {
         @JavascriptInterface public void saveFile(String name,String base64){saveTextFile(name,base64);}
         @JavascriptInterface public void saveTextFile(String name,String base64){
-            new Thread(()->{try{saveMedia(name,base64,name.endsWith(".json")?"application/json":"text/csv");notifyText("已保存到下载/WenXinWuKui");}catch(Exception e){notifyText("导出失败："+e.getMessage());}}).start();
+            new Thread(()->{try{saveMedia(name,base64,name.endsWith(".json")?"application/json":"text/csv");notifyText("已保存到下载/ZhiYu");}catch(Exception e){notifyText("导出失败："+e.getMessage());}}).start();
         }
         @JavascriptInterface public void shareCsv(String name,String base64,String email){
             new Thread(()->{try{
