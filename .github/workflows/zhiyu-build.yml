@@ -100,17 +100,17 @@ jobs:
         run: |
           set -euo pipefail
           cat > out/recovery-public.pem <<'EOF'
------BEGIN PUBLIC KEY-----
-MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA1AYkpnLJGDyokekTWXrO
-Jb6lXyiWV/N3v+rLsTJOFo50rcE9L6K4gv5W7zj4hr+PfL7RiBSu4D4RogKoaKMq
-x7tSGZvTtv/8m2UnMx8hRaUjGzlTy1wgxNneQb+ES+Xn/V8hGoPd81UBI6aVwAxv
-DoPx5H4+97CC5uiE1egHskWyYoH+3sEgqfcC+mAISD+NaNtnch7+P337ChugbmJd
-E0InWTWPXjN0vsEzjLE4E0rOm6N15qGCWFt9wytSWyXdmc9nvBCzoNjs0huURKQS
-YQDHuAByWti+O5Bpj0FKGc/zDCQtjh1VLHBohxePuApNMmC2Ur65aLnjdVJi41Ew
-PEuCWYkHQUsMVlQQYKAk15FjXZ+Ack3Pny4xrVrOAVKfSud/dk3oXQ625JFuylgL
-/Q1mbgBs4oxi1BpSixq2tuODOuEmKGyybTHUhecpC3OdRwufoGhKLGhJbd4XZZZS
-0oBNJ6hIDKlccAJ3NJjJfZBv+XIyu0b8DUV4HI7XOXUnAgMBAAE=
------END PUBLIC KEY-----
+          -----BEGIN PUBLIC KEY-----
+          MIIBojANBgkqhkiG9w0BAQEFAAOCAY8AMIIBigKCAYEA1AYkpnLJGDyokekTWXrO
+          Jb6lXyiWV/N3v+rLsTJOFo50rcE9L6K4gv5W7zj4hr+PfL7RiBSu4D4RogKoaKMq
+          x7tSGZvTtv/8m2UnMx8hRaUjGzlTy1wgxNneQb+ES+Xn/V8hGoPd81UBI6aVwAxv
+          DoPx5H4+97CC5uiE1egHskWyYoH+3sEgqfcC+mAISD+NaNtnch7+P337ChugbmJd
+          E0InWTWPXjN0vsEzjLE4E0rOm6N15qGCWFt9wytSWyXdmc9nvBCzoNjs0huURKQS
+          YQDHuAByWti+O5Bpj0FKGc/zDCQtjh1VLHBohxePuApNMmC2Ur65aLnjdVJi41Ew
+          PEuCWYkHQUsMVlQQYKAk15FjXZ+Ack3Pny4xrVrOAVKfSud/dk3oXQ625JFuylgL
+          /Q1mbgBs4oxi1BpSixq2tuODOuEmKGyybTHUhecpC3OdRwufoGhKLGhJbd4XZZZS
+          0oBNJ6hIDKlccAJ3NJjJfZBv+XIyu0b8DUV4HI7XOXUnAgMBAAE=
+          -----END PUBLIC KEY-----
           EOF
           (cd out && zip -q signing-material.zip zhiyu-keystore.p12 keystore-password.txt)
           openssl rand -hex 32 > out/archive-passphrase.txt
