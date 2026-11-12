@@ -1,0 +1,45 @@
+name: Publish verified Huaimin 0.39.30 public APK
+on:
+  push:
+    branches: [delivery/huaimin-03930-public-preview]
+    paths:
+      - '.github/workflows/huaimin-03930-public-release.yml'
+permissions:
+  contents: write
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 12
+    steps:
+      - name: Checkout signed APK transfer data
+        uses: actions/checkout@v4
+      - name: Reassemble exact already-signed APK and verify SHA-256
+        run: |
+          python3 - <<'PY'
+          import pathlib,json,base64,hashlib
+          root=pathlib.Path("transfer/03930")
+          names=[f"part-{i:03d}.txt" for i in range(48)]
+          parts=[(root/name).read_text(encoding="ascii") for name in names]
+          if any(len(p)!=750000 for p in parts[:-1]):
+              raise RuntimeError("Missing or truncated APK part")
+          signed=base64.b64decode("".join(parts),validate=True)
+          sha=hashlib.sha256(signed).hexdigest()
+          if sha!="1c7ca57476a9f70e8750ee832d305fabb798f916f3b8711ab2cfd60642904106" or len(signed)!=26998234:
+              raise RuntimeError(f"Signed APK failed exact SHA256/size verification: {sha}/{len(signed)}")
+          out=pathlib.Path("Huaimin-0.39.30-Release-Signed.apk")
+          out.write_bytes(signed)
+          print("Verified same signed APK as private original:",sha,len(signed))
+          PY
+      - name: Publish public Release for Android mobile downloads
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          gh release create huaimin-v0.39.30-public-preview \
+            Huaimin-0.39.30-Release-Signed.apk \
+            --target "$GITHUB_SHA" \
+            --title '怀民亦未寝 v0.39.30 · 可覆盖安装测试版' \
+            --notes '已经验收的签名证书：e3089362ec55c39f90b0d2f9560b03b20f868f1b1eecd4c89619e7442a865f3d。SHA-256：1c7ca57476a9f70e8750ee832d305fabb798f916f3b8711ab2cfd60642904106。版本 0.39.30（62195）。新增手机状态一次授权、真实应用时长排行榜和七日趋势。与先前私有仓库版本字节完全一致。此包用于真机测试，未推送官网。' \
+            --prerelease
+          gh release view huaimin-v0.39.30-public-preview --json assets --jq '.assets[].name'
+          echo 'PUBLIC_APK_URL=https://github.com/Buruxianhecha/huaimin-releases/releases/download/huaimin-v0.39.30-public-preview/Huaimin-0.39.30-Release-Signed.apk'
